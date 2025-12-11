@@ -1,3 +1,11 @@
+"""
+Simple example of using Ollama embeddings with an in-memory vector store.
+
+This example demonstrates how to create embeddings for a given text
+and store them in an in-memory vector store for retrieval.
+
+Finally, it retrieves the most similar text based on a query.
+"""
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_ollama import OllamaEmbeddings
 

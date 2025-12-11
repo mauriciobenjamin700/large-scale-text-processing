@@ -1,3 +1,12 @@
+"""
+Simple example of using Ollama embeddings to find the most similar text.
+
+This example demonstrates how to create embeddings for multiple texts
+using the OllamaEmbeddings class.
+
+Finally, it finds and prints the text most similar to a given query.
+"""
+
 from langchain_ollama import OllamaEmbeddings
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np

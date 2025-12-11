@@ -1,3 +1,11 @@
+"""
+Simple example of using Ollama embeddings.
+
+This example demonstrates how to create a single embedding for a given text
+using the OllamaEmbeddings class.
+
+Finally, it prints the resulting embedding vector.
+"""
 from langchain_ollama import OllamaEmbeddings
 
 
