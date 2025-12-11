@@ -35,3 +35,9 @@ Resposta final
 ## Solução 4: Extração de informações (Information Extraction)
 
 ## Solução 5: Compressão vetorial (quantização + PCA + sparsification)
+
+## Referências Usadas
+
+- [OllamaEmbeddings](https://docs.langchain.com/oss/python/integrations/text_embedding/ollama)
+- [Build a RAG agent with LangChain](https://docs.langchain.com/oss/python/langchain/rag)
+- [langchain-ollama](https://reference.langchain.com/python/integrations/langchain_ollama/#langchain_ollama.ChatOllama)

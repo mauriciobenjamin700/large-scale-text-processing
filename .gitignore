@@ -13,6 +13,10 @@ wheels/
 
 *.pdf
 
+test.py
+
 ## Folders
+
+.vscode
 
 pdf/
