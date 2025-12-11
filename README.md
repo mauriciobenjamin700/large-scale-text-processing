@@ -41,3 +41,5 @@ Resposta final
 - [OllamaEmbeddings](https://docs.langchain.com/oss/python/integrations/text_embedding/ollama)
 - [Build a RAG agent with LangChain](https://docs.langchain.com/oss/python/langchain/rag)
 - [langchain-ollama](https://reference.langchain.com/python/integrations/langchain_ollama/#langchain_ollama.ChatOllama)
+- [O Facebook AI Similarity Search (FAISS)](https://docs.langchain.com/oss/python/integrations/vectorstores/faiss)
+- [Vector Database](https://docs.langchain.com/oss/python/integrations/vectorstores/chroma)
