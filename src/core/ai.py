@@ -1,11 +1,15 @@
 from langchain_ollama import OllamaEmbeddings
 
+from .settings import settings
+
 
 embeddings = OllamaEmbeddings(
-    model="embeddinggemma",
-    num_gpu=1,
-    keep_alive=True,
-    temperature=0.9,
-    top_k=40,
-    top_p=0.7,
+    model=settings.OLLAMA_EMBEDDINGS_MODEL_NAME,
+    num_gpu=settings.NUM_GPU,
+    keep_alive=settings.KEEP_ALIVE,
+    temperature=settings.TEMPERATURE,
+    top_k=settings.TOP_K,
+    top_p=settings.TOP_P,
 )
+
+__all__ = ["embeddings"]
