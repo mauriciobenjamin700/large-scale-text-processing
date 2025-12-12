@@ -1,8 +1,8 @@
 """
-Simple example of using Ollama embeddings with an in-memory vector store.
+Simple example of using Ollama embeddings with a FAISS vector store.
 
 This example demonstrates how to initialize the Ollama embeddings model,
-create a Chroma vector store, add documents, update and delete documents,
+create a FAISS vector store, add documents, update and delete documents,
 and perform similarity searches with various filters and methods.
 
 Finally, it shows how to use the MMR retriever for more advanced retrieval
@@ -10,8 +10,10 @@ techniques.
 """
 from uuid import uuid4
 
+import faiss
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
 
 # Initializing the Ollama embeddings model
@@ -25,21 +27,33 @@ embeddings = OllamaEmbeddings(
     top_p=0.7,
 )
 
+# Preparing the FAISS index
+
+index = faiss.IndexFlatL2(len(embeddings.embed_query("hello world")))
+
+# Creating the vector store
+
+vector_store = FAISS(
+    embedding_function=embeddings,
+    index=index,
+    docstore=InMemoryDocstore(),
+    index_to_docstore_id={},
+)
+
+
 document_1 = Document(
     page_content="""
 I had chocolate chip pancakes and scrambled eggs for breakfast this morning.
 """,
     metadata={"source": "tweet"},
-    id=1,
 )
 
 document_2 = Document(
     page_content="""
-The local elections saw a record turnout this year, with over 70% of eligible
-voters casting their ballots.
+The weather forecast for tomorrow is cloudy and overcast,
+with a high of 62 degrees.
 """,
     metadata={"source": "news"},
-    id=2,
 )
 
 document_3 = Document(
@@ -47,7 +61,6 @@ document_3 = Document(
 Building an exciting new project with LangChain - come check it out!
 """,
     metadata={"source": "tweet"},
-    id=3,
 )
 
 document_4 = Document(
@@ -55,7 +68,6 @@ document_4 = Document(
 Robbers broke into the city bank and stole $1 million in cash.
 """,
     metadata={"source": "news"},
-    id=4,
 )
 
 document_5 = Document(
@@ -63,7 +75,6 @@ document_5 = Document(
 Wow! That was an amazing movie. I can't wait to see it again.
 """,
     metadata={"source": "tweet"},
-    id=5,
 )
 
 document_6 = Document(
@@ -71,38 +82,30 @@ document_6 = Document(
 Is the new iPhone worth the price? Read this review to find out.
 """,
     metadata={"source": "website"},
-    id=6,
 )
 
 document_7 = Document(
-    page_content="The top 10 soccer players in the world right now.",
+    page_content="""The top 10 soccer players in the world right now.""",
     metadata={"source": "website"},
-    id=7,
 )
 
 document_8 = Document(
     page_content="""
 LangGraph is the best framework for building stateful, agentic applications!
 """,
-    metadata={"source": "tweet"},
-    id=8,
+    metadata={"source": "website"},
 )
-
 document_9 = Document(
     page_content="""
 The stock market is down 500 points today due to fears of a recession.
 """,
     metadata={"source": "news"},
-    id=9,
 )
 
 document_10 = Document(
     page_content="I have a bad feeling I am going to get deleted :(",
     metadata={"source": "tweet"},
-    id=10,
 )
-
-# Preparing documents and their UUIDs
 
 documents = [
     document_1,
@@ -118,50 +121,17 @@ documents = [
 ]
 uuids = [str(uuid4()) for _ in range(len(documents))]
 
-# Creating the vector store
-
-vector_store = Chroma(
-    collection_name="example_collection",
-    embedding_function=embeddings,
-    persist_directory="./chroma_langchain_db",
-)
-
 # Adding documents to the vector store
 
-vector_store.add_documents(documents=documents, ids=uuids)
+result = vector_store.add_documents(documents=documents, ids=uuids)
 
-# Updating documents in the vector store
+print("Added documents with the following IDs:", result)
 
-updated_document_1 = Document(
-    page_content="""
-    I had chocolate chip pancakes and fried eggs for breakfast this morning.
-    """,
-    metadata={"source": "tweet"},
-    id=1,
-)
+result = vector_store.delete(ids=[uuids[-1]])
 
-updated_document_2 = Document(
-    page_content="""
-    The weather forecast for tomorrow is sunny and warm,
-with a high of 82 degrees.
-    """,
-    metadata={"source": "news"},
-    id=2,
-)
+print("Deleted document with ID:", result)
 
-# Updating a document
-
-vector_store.update_document(document_id=uuids[0], document=updated_document_1)
-# You can also update multiple documents at once
-vector_store.update_documents(
-    ids=uuids[:2], documents=[updated_document_1, updated_document_2]
-)
-
-# Deleting a document
-
-vector_store.delete(ids=uuids[-1])
-
-# Using similarity search
+# Similarity search without filter
 
 results = vector_store.similarity_search(
     "LangChain provides abstractions to make working with LLMs easy",
@@ -171,7 +141,17 @@ results = vector_store.similarity_search(
 for res in results:
     print(f"* {res.page_content} [{res.metadata}]")
 
-# Using similarity search with score
+# Similarity search with filter
+
+results = vector_store.similarity_search(
+    "LangChain provides abstractions to make working with LLMs easy",
+    k=2,
+    filter={"source": {"$eq": "tweet"}},
+)
+for res in results:
+    print(f"* {res.page_content} [{res.metadata}]")
+
+# Similarity search with score and filter
 
 results = vector_store.similarity_search_with_score(
     "Will it be hot tomorrow?", k=1, filter={"source": "news"}
@@ -179,20 +159,16 @@ results = vector_store.similarity_search_with_score(
 for res, score in results:
     print(f"* [SIM={score:3f}] {res.page_content} [{res.metadata}]")
 
-# Using similarity search by vector
-
-results = vector_store.similarity_search_by_vector(
-    embedding=embeddings.embed_query("I love green eggs and ham!"), k=1
-)
-for doc in results:
-    print(f"* {doc.page_content} [{doc.metadata}]")
-
-# Using MMR retriever
+# MMR Retriever example
 
 retriever = vector_store.as_retriever(
-    search_type="mmr", search_kwargs={"k": 1, "fetch_k": 5}
+    search_type="mmr",
+    search_kwargs={"k": 1}
 )
-retriever.invoke(
+result = retriever.invoke(
     "Stealing from the bank is a crime",
     filter={"source": "news"}
 )
+
+
+print("MMR Retriever result:", result)
