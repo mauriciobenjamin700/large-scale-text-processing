@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     CHROMA_PERSIST_DIRECTORY: str = "./chroma_langchain_db"
     CHROMA_COLLECTION_NAME: str = "default_collection"
     OLLAMA_EMBEDDINGS_MODEL_NAME: str = "embeddinggemma"
+    OLLAMA_CHAT_MODEL_NAME: str = "gpt-oss:20b"
     NUM_GPU: int | None = None
     KEEP_ALIVE: bool = True
     TEMPERATURE: float = 0.9
