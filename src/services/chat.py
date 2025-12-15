@@ -53,13 +53,23 @@ class ChatService:
             k=5
         )
 
+        print(f"Found {len(documents)} similar documents for the query.")
+
         context = "\n".join([doc.page_content for doc in documents])
 
-        prompt = (
-            f"Based on the documents:\n{context}\n\n"
-            f"Answer: {message}")
+        print(f"Context prepared for the model. {context}")
 
-        response = self.model.invoke(prompt)
+        input = [
+            {
+                "role": "system",
+                "content": f"Use this context on the documents:\n{context}"
+            },
+            {"role": "user", "content": f"Answer: {message}"}
+        ]
+
+        response = self.model.invoke(input=input)
+
+        print(f"Model response received: {response}")
 
         return str(response.content)
 
@@ -77,7 +87,9 @@ class ChatService:
             raise FileNotFoundError(f"The file {pdf_path} does not exist.")
 
         documents = PDFHandler.load_pdf(pdf_path)
+        print(f"Loaded {len(documents)} pages from {pdf_path}")
         split_docs = PDFHandler.split_documents(documents)
+        print(f"Split into {len(split_docs)} chunks.")
         ids = [str(uuid4()) for _ in split_docs]
 
         VectorHandler.save_documents_on_vector_store(
@@ -141,3 +153,12 @@ class ChatService:
                 ids=doc_schema.documents_id
             )
         self.session.documents.clear()
+
+    def list_pdf(self) -> list[str]:
+        """
+        List all loaded PDF documents in the current chat session.
+
+        Returns:
+            list: A list of filenames of the loaded PDF documents.
+        """
+        return [doc.filename for doc in self.session.documents]

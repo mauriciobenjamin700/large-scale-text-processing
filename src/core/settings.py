@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     TEMPERATURE: float = 0.9
     TOP_K: int = 40
     TOP_P: float = 0.7
+    GOOGLE_API_KEY: str = ""
 
 
 settings = Settings()

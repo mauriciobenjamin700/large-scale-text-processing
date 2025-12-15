@@ -23,5 +23,6 @@ vectorstore.json
 .vscode
 
 chroma_langchain_db/
+chroma_db/
 pdf/
 
