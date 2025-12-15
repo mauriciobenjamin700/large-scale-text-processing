@@ -47,10 +47,12 @@ class ChatService:
         Returns:
             str: The generated response.
         """        # Placeholder for message processing logic
-        documents = VectorHandler.find_documents_by_similarity(
-            self.db,
+        retriever = VectorHandler.map_to_retriever(
+            self.db, "similarity", search_kwargs={"k": 5}
+        )
+        documents = VectorHandler.find_by_query_on_retriever(
+            retriever,
             query=message,
-            k=5
         )
 
         print(f"Found {len(documents)} similar documents for the query.")

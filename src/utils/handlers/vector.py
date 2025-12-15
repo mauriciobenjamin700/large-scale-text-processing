@@ -183,7 +183,7 @@ class VectorHandler:
     def map_to_retriever(
         vector_store: Chroma,
         search_type: Literal["similarity", "mmr"] = "mmr",
-        search_kwargs: dict[str, Any] = {"k": 1, "fetch_k": 5}
+        search_kwargs: dict[str, Any] = {"k": 1}
     ) -> VectorStoreRetriever:
         """
         Map the vector store to a retriever.
