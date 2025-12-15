@@ -1,12 +1,11 @@
-from langchain.agents import create_agent
-from langchain_ollama.chat_models import ChatOllama
+from src.views import home_view, options_view
 
 
-chat = ChatOllama(
-    name="gpt-oss:20b",
+def main() -> None:
+    home_view()
+    exec = True
+    while exec:
+        exec = options_view()
 
-)
 
-agent = create_agent(
-
-)
+main()
