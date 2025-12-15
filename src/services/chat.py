@@ -87,21 +87,40 @@ class ChatService:
             raise FileNotFoundError(f"The file {pdf_path} does not exist.")
 
         documents = PDFHandler.load_pdf(pdf_path)
-        print(f"Loaded {len(documents)} pages from {pdf_path}")
-        split_docs = PDFHandler.split_documents(documents)
-        print(f"Split into {len(split_docs)} chunks.")
-        ids = [str(uuid4()) for _ in split_docs]
+        docs = documents
+        # filter out empty chunks (some PDFs/pages may produce empty text)
+        non_empty_docs = [d for d in docs if (d.page_content or "").strip()]
+        empty_count = len(docs) - len(non_empty_docs)
+        if empty_count:
+            print(
+                f"Warning: {empty_count} "
+                "empty chunk(s) were dropped before indexing."
+                )
 
-        VectorHandler.save_documents_on_vector_store(
-            vector_store=self.db,
-            documents=split_docs,
-            ids=ids
+        if not non_empty_docs:
+            raise ValueError("No text extracted from PDF; aborting load.")
+
+        print(
+            f"Split into {len(non_empty_docs)} "
+            f"non-empty chunks (dropped {empty_count})."
         )
+        ids = [str(uuid4()) for _ in non_empty_docs]
+
+        try:
+            VectorHandler.save_documents_on_vector_store(
+                vector_store=self.db,
+                documents=non_empty_docs,
+                ids=ids,
+            )
+        except Exception as e:
+            # provide more context when embeddings/vector store calls fail
+            print(f"Error saving documents to vector store: {e}")
+            raise
         self.session.documents.append(
             DocumentSchema(
                 filename=pdf_path,
                 documents_id=ids,
-                documents=split_docs
+                documents=non_empty_docs,
             )
         )
 
